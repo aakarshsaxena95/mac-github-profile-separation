@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Separate Work &amp; Personal GitHub Profiles on macOS</title>
+<style>
+:root {
+  --bg:#f5f7fb; --card:#fff; --text:#172033; --muted:#657083;
+  --line:#e4e8ef; --accent:#2563eb; --code:#111827;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--bg); color:var(--text);
+  font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.wrap { max-width:980px; margin:auto; padding:48px 20px 80px; }
+header,.content {
+  background:var(--card); border:1px solid var(--line); border-radius:18px;
+}
+header { padding:42px; margin-bottom:22px; }
+header h1 { margin:0 0 8px; font-size:34px; line-height:1.2; }
+header p { margin:0; color:var(--muted); }
+.content { padding:36px 42px; }
+h2 { margin-top:44px; padding-top:18px; border-top:1px solid var(--line); }
+h3 { margin-top:28px; }
+pre {
+  background:var(--code); color:#f9fafb; padding:18px; border-radius:10px;
+  overflow:auto; box-shadow:0 4px 16px rgba(0,0,0,.08);
+}
+code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em; }
+p code { background:#eef2f7; padding:2px 6px; border-radius:5px; }
+.note {
+  background:#eff6ff; border-left:4px solid var(--accent);
+  padding:12px 16px; border-radius:7px; margin:16px 0;
+}
+@media(max-width:700px) {
+  .content,header { padding:24px; }
+  header h1 { font-size:27px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Separate Work &amp; Personal GitHub Profiles on macOS</h1>
+  <p>Git identity + SSH account separation, with copy-ready commands.</p>
+</header>
+<main class="content">
+<h1>Separate Work &amp; Personal GitHub Profiles on macOS</h1><p>This guide configures a Mac so work and personal GitHub repositories use separate Git identities and separate GitHub SSH accounts.</p><div class='note'>**Use your own directory names and values.** Examples such as `~/Work`, `~/Personal`, `YOUR_USERNAME`, and `YOUR_PERSONAL_GITHUB_EMAIL` are placeholders.</div><h2>1. Check the existing Git identity</h2><pre><code>git config --global user.name
+git config --global user.email</code></pre><p>Keep the existing work identity as the global/default identity.</p><h2>2. Choose separate repository directories</h2><p>Example:</p><pre><code>~/Work
+~/Personal</code></pre><p>Your actual directories can have any names.</p><p>The important requirement is that personal repositories live below one predictable parent directory.</p><h2>3. Create the personal Git configuration</h2><pre><code>nano ~/.gitconfig-personal</code></pre><p>Paste:</p><pre><code>[user]
+    name = YOUR_PERSONAL_NAME
+    email = YOUR_PERSONAL_GITHUB_EMAIL</code></pre><p>Save with <code>Ctrl + O</code>, press Enter, then <code>Ctrl + X</code>.</p><h2>4. Load the personal config only for personal repositories</h2><p>Open the global Git config:</p><pre><code>nano ~/.gitconfig</code></pre><p>Add:</p><pre><code>[includeIf &quot;gitdir:/Users/YOUR_USERNAME/YOUR_PERSONAL_DIRECTORY/&quot;]
+    path = ~/.gitconfig-personal</code></pre><p>Use the absolute path to your personal repository directory. The trailing <code>/</code> is important.</p><h2>5. Verify Git identity separation</h2><p>Inside a personal repository:</p><pre><code>cd /path/to/personal/repository
+git config user.name
+git config user.email</code></pre><p>Inside a work repository:</p><pre><code>cd /path/to/work/repository
+git config user.name
+git config user.email</code></pre><p>For troubleshooting:</p><pre><code>git config --show-origin --get-regexp &#x27;user\.|include&#x27;</code></pre><h2>6. Inspect the existing SSH setup</h2><pre><code>ls -la ~/.ssh
+cat ~/.ssh/config 2&gt;/dev/null
+ssh-add -l</code></pre><p>Identify the existing work SSH key. Do not overwrite it.</p><p>If the SSH config contains cloud, enterprise, or server-specific hosts, preserve those entries.</p><h2>7. Back up the SSH configuration</h2><pre><code>cp ~/.ssh/config ~/.ssh/config.backup</code></pre><p>If the config does not exist, this step can be skipped.</p><h2>8. Create a personal SSH key</h2><pre><code>ssh-keygen -t ed25519 -C &quot;YOUR_PERSONAL_GITHUB_EMAIL&quot; -f ~/.ssh/id_ed25519_personal</code></pre><p>Use a passphrase when prompted.</p><p>This creates:</p><pre><code>~/.ssh/id_ed25519_personal
+~/.ssh/id_ed25519_personal.pub</code></pre><p>Never share the private key.</p><h2>9. Add the personal key to the macOS SSH agent</h2><pre><code>ssh-add --apple-use-keychain ~/.ssh/id_ed25519_personal</code></pre><p>Verify:</p><pre><code>ssh-add -l</code></pre><h2>10. Add the personal public key to GitHub</h2><p>Display it:</p><pre><code>cat ~/.ssh/id_ed25519_personal.pub</code></pre><p>Copy the entire line and add it to your personal GitHub account under:</p><p><strong>Settings → SSH and GPG keys → New SSH key</strong></p><p>Only the <code>.pub</code> key is uploaded.</p><h2>11. Add separate GitHub SSH aliases</h2><p>Edit the SSH config:</p><pre><code>nano ~/.ssh/config</code></pre><p>Add these blocks while preserving existing infrastructure-specific configuration:</p><pre><code># Work GitHub
+Host github-work
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/YOUR_EXISTING_WORK_KEY
+  IdentitiesOnly yes
+
+# Personal GitHub
+Host github-personal
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519_personal
+  IdentitiesOnly yes</code></pre><p>Replace <code>YOUR_EXISTING_WORK_KEY</code> with the actual work key filename.</p><p>Do not blindly replace the entire SSH config if it contains other hosts.</p><h2>12. Test both GitHub accounts</h2><p>Work:</p><pre><code>ssh -T git@github-work</code></pre><p>Personal:</p><pre><code>ssh -T git@github-personal</code></pre><p>Each should identify the expected GitHub account.</p><p>GitHub may say that it does not provide shell access. That is normal.</p><h2>13. Clone a personal repository</h2><p>Use the personal SSH alias for a new clone:</p><pre><code>cd /path/to/personal/directory
+git clone git@github-personal:YOUR_GITHUB_USERNAME/YOUR_REPOSITORY.git</code></pre><p>For example:</p><pre><code>git@github-personal:username/repository.git</code></pre><h3>Why the alias is required during clone</h3><p>A new repository does not have a <code>.git</code> directory yet, so a <code>gitdir:</code> conditional include cannot match it during the initial clone.</p><h2>14. Verify the personal repository</h2><pre><code>cd /path/to/personal/directory/YOUR_REPOSITORY
+git config user.name
+git config user.email
+git remote -v</code></pre><p>The email should be the personal email, and the remote should use <code>github-personal</code>.</p><p>From then on:</p><pre><code>git pull
+git push</code></pre><p>will use the personal SSH key.</p><h2>15. Clone a work repository</h2><pre><code>cd /path/to/work/directory
+git clone git@github-work:WORK_GITHUB_OWNER/YOUR_REPOSITORY.git</code></pre><p>Verify:</p><pre><code>cd /path/to/work/directory/YOUR_REPOSITORY
+git config user.email
+git remote -v</code></pre><h2>Troubleshooting</h2><h3>Personal clone says &quot;Repository not found&quot;</h3><p>Test:</p><pre><code>ssh -T git@github-personal</code></pre><p>Confirm the clone URL starts with:</p><pre><code>git@github-personal:</code></pre><p>and that the repository exists in the personal GitHub account.</p><h3>Personal repository shows the work email</h3><p>Run:</p><pre><code>git config --show-origin --get user.email</code></pre><p>Then:</p><pre><code>git config --show-origin --get-regexp &#x27;user\.|include&#x27;</code></pre><p>Verify that the repository is below the directory specified in <code>includeIf</code>.</p><h3>Git uses the wrong SSH account</h3><p>Run:</p><pre><code>GIT_TRACE=1 git ls-remote &lt;remote-url&gt;</code></pre><p>For a personal repository, the trace should show <code>git@github-personal</code>.</p><p>For a work repository, it should show <code>git@github-work</code>.</p><h3>New personal clone does not use the personal Git identity</h3><p>This is expected until the repository exists. Clone with:</p><pre><code>git clone git@github-personal:USERNAME/REPOSITORY.git</code></pre><p>Then enter the repository and run:</p><pre><code>git config user.email</code></pre><h3>Existing enterprise/cloud SSH access breaks</h3><p>Restore the backup:</p><pre><code>cp ~/.ssh/config.backup ~/.ssh/config</code></pre><p>Then re-add only the two GitHub host aliases, preserving existing host-specific settings.</p><h2>Final architecture</h2><pre><code>WORK
+/path/to/work/repositories/*
+    ↓
+work Git identity
+    ↓
+github-work
+    ↓
+work SSH key
+    ↓
+work GitHub account
+
+
+PERSONAL
+/path/to/personal/repositories/*
+    ↓
+personal Git identity
+    ↓
+github-personal
+    ↓
+personal SSH key
+    ↓
+personal GitHub account</code></pre><p>The key principle:</p><div class='note'>**Use Git conditional configuration to separate commit identity, and SSH host aliases to separate GitHub authentication.**</div>
+</main>
+</div>
+</body>
+</html>
