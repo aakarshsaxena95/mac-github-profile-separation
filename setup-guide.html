@@ -101,6 +101,17 @@ github-personal
 personal SSH key
     ↓
 personal GitHub account</code></pre><p>The key principle:</p><div class='note'>**Use Git conditional configuration to separate commit identity, and SSH host aliases to separate GitHub authentication.**</div>
+<h2>16. Final validation</h2>
+<p>After adding the personal public key to GitHub and cloning repositories, run:</p>
+<pre><code># From a personal repository
+git config --show-origin --get user.name
+git config --show-origin --get user.email
+git remote -v
+
+# Verify both GitHub SSH aliases
+ssh -T git@github-work
+ssh -T git@github-personal</code></pre>
+<p>The personal Git values should come from <code>~/.gitconfig-personal</code>, the personal remote should use <code>github-personal</code>, and each SSH command should identify the expected GitHub account. GitHub's "does not provide shell access" message is expected after successful authentication.</p>
 </main>
 </div>
 </body>
