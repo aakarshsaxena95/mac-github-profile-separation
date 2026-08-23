@@ -12,7 +12,7 @@ A practical guide to configuring a Mac for separate work and personal GitHub acc
 ## Setup
 
 - [Full Markdown setup guide](./setup-guide.md)
-- [Open the reader-friendly HTML setup guide](https://aakarshsaxena95.github.io/mac-github-profile-separation/setup-guide.html)
+- [Open the reader-friendly HTML setup guide](https://aakarshsaxena95.github.io/mac-github-profile-separation/)
 
 ## Prerequisites
 

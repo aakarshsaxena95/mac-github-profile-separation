@@ -2,7 +2,9 @@ name: Deploy GitHub Pages
 
 on:
   push:
-    branches: [init]
+    # GitHub Pages should deploy the version merged into the repository's
+    # default branch. This repository's default branch is `main`.
+    branches: [main]
   workflow_dispatch:
 
 permissions:
