@@ -43,6 +43,19 @@ key](./setup-guide.md#8-create-a-personal-ssh-key) in the setup guide.
 The script prints the public key at the end; add that key to your personal
 GitHub account before testing the `github-personal` alias.
 
+### Find the script inputs
+
+Use the existing [Markdown setup guide](./setup-guide.md) to determine each
+option before running the command:
+
+- `--personal-dir`: [choose the parent directory](./setup-guide.md#2-choose-separate-repository-directories) that will contain your personal repositories.
+- `--personal-name` and `--personal-email`: use the values for your personal GitHub account; see [create the personal Git configuration](./setup-guide.md#3-create-the-personal-git-configuration).
+- `--work-key`: identify the existing work private key with [inspect the existing SSH setup](./setup-guide.md#6-inspect-the-existing-ssh-setup).
+- `--personal-key`: choose the path for the new personal private key; the recommended path is covered in [create a personal SSH key](./setup-guide.md#8-create-a-personal-ssh-key).
+
+Do not pass a key passphrase to the script. If a new personal key is created,
+`ssh-keygen` prompts for it securely.
+
 ## Prerequisites
 
 - macOS
