@@ -248,6 +248,26 @@ git config user.email
 git remote -v
 ```
 
+## 16. Final validation
+
+After adding the personal public key to GitHub and cloning repositories, run:
+
+```bash
+# From a personal repository
+git config --show-origin --get user.name
+git config --show-origin --get user.email
+git remote -v
+
+# Verify both GitHub SSH aliases
+ssh -T git@github-work
+ssh -T git@github-personal
+```
+
+The personal Git values should come from `~/.gitconfig-personal`, the personal
+remote should use `github-personal`, and each SSH command should identify the
+expected GitHub account. GitHub's "does not provide shell access" message is
+expected after successful authentication.
+
 ## Troubleshooting
 
 ### Personal clone says "Repository not found"
